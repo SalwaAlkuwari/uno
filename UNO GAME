@@ -1,0 +1,766 @@
+import pygame
+import random 
+from pygame import mixer
+pygame.init()
+mixer.init()
+pygame.font.init()
+direction = 1
+playersn = 0
+menu = True
+
+
+# cards template from : https://www.pinterest.com/pin/321374123422909625/
+# rest of the cards are designed by  me 
+
+#frame
+clock = pygame.time.Clock()
+
+#sound effects 
+# mixer.music.load('cardSound.mp3')
+
+#menu screen:
+screen = pygame.display.set_mode((600,600))
+pygame.display.set_caption("UNO")
+
+#updates the window
+def gameScreen():
+    pygame.display.update()
+
+# menu background from: https://www.pinterest.com/pin/588916088785412077/
+bg = pygame.image.load('images/menu.jpg')
+bg = pygame.transform.scale(bg, (600,600))
+screen.blit(bg, (0,0))
+
+logo = pygame.image.load('images/logo.png')
+w = logo.get_width()
+h = logo.get_height()
+logo = pygame.transform.scale(logo, (int(w*0.3), int(h*0.3)))
+screen.blit(logo, (150,20))
+
+
+# credit: coding with russ, adding buttons on youtube (changed it to my needs)
+class Button:
+    def __init__(self, x, y, image, ind, scale = 1, player = 0):
+        w = image.get_width()
+        h = image.get_height()
+        self.image = pygame.transform.scale(image, (int(w*scale), int(h*scale)))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+        self.clicked = False
+        self.ind = ind
+
+    def draw(self):
+        # gets mosue pos
+        # can still keep  pressing and not press once as i csould with the falg
+        pos = pygame.mouse.get_pos()
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+        if self.rect.collidepoint(pos):
+            action = False
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                self.clicked = True
+                action = True
+                return action
+    def getIndex(self):
+        return self.ind
+    def getPlayer(self):
+        return player
+
+class menuLoop :
+    def __init__(self):
+        self.twop = Button(185, 270, pygame.image.load('images/2players.png').convert_alpha(), 2, 0.6)
+        self.threep = Button(185, 370, pygame.image.load('images/3players.png').convert_alpha(), 2, 0.6)
+        self.fourp = Button(185, 470, pygame.image.load('images/4players.png').convert_alpha(), 2, 0.6)
+        self.playersn = 0
+        self.menu = True
+    def getPlayersn(self):
+        if self.twop.draw():
+            self.menu = False
+            return 2
+        elif self.threep.draw():
+            self.menu = False
+            return 3
+        elif self.fourp.draw():
+            self.menu = False
+            return 4
+
+m = menuLoop()
+
+while m.menu == True:
+    playersn = m.getPlayersn()
+    clock.tick(6)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            m.menu = False
+    gameScreen()
+
+
+#display
+screen = pygame.display.set_mode((1300,800))
+pygame.display.set_caption("UNO")
+
+#background
+pink = (219,112,147)
+black = (0, 0, 0)
+white = (255, 255, 255)
+#background from: https://64.media.tumblr.com/ef038e0f975454f67e57632a84a3a26e/tumblr_ntnvadc3lK1smn4pqo1_1280.png
+bg = pygame.image.load('images/background.png')
+bg = pygame.transform.scale(bg, (1300,800))
+screen.blit(bg, (0,0))
+
+
+
+
+#loading all cards
+size = (72, 108)
+cardsPics = [
+pygame.image.load('cards_png/red_0.png').convert_alpha(), pygame.image.load('cards_png/red_1.png').convert_alpha(), pygame.image.load('cards_png/red_2.png').convert_alpha(),
+pygame.image.load('cards_png/red_3.png').convert_alpha(), pygame.image.load('cards_png/red_4.png').convert_alpha(), pygame.image.load('cards_png/red_5.png').convert_alpha(),
+pygame.image.load('cards_png/red_6.png').convert_alpha(), pygame.image.load('cards_png/red_7.png').convert_alpha(), pygame.image.load('cards_png/red_8.png').convert_alpha(),
+pygame.image.load('cards_png/red_9.png').convert_alpha(), pygame.image.load('cards_png/red_reverse.png').convert_alpha(), pygame.image.load('cards_png/red_skip.png').convert_alpha(),
+pygame.image.load('cards_png/red_Draw 2.png').convert_alpha(), pygame.image.load('cards_png/red_show me.png').convert_alpha(), pygame.image.load('cards_png/yellow_0.png').convert_alpha(),
+pygame.image.load('cards_png/yellow_1.png').convert_alpha(), pygame.image.load('cards_png/yellow_2.png').convert_alpha(), pygame.image.load('cards_png/yellow_3.png').convert_alpha(),
+pygame.image.load('cards_png/yellow_4.png').convert_alpha(), pygame.image.load('cards_png/yellow_5.png').convert_alpha(), pygame.image.load('cards_png/yellow_6.png').convert_alpha(),
+pygame.image.load('cards_png/yellow_7.png').convert_alpha(), pygame.image.load('cards_png/yellow_8.png').convert_alpha(), pygame.image.load('cards_png/yellow_9.png').convert_alpha(),
+pygame.image.load('cards_png/yellow_reverse.png').convert_alpha(), pygame.image.load('cards_png/yellow_skip.png'), pygame.image.load('cards_png/yellow_Draw 2.png').convert_alpha(),
+pygame.image.load('cards_png/yellow_show me.png').convert_alpha(),pygame.image.load('cards_png/blue_0.png').convert_alpha(), pygame.image.load('cards_png/blue_1.png').convert_alpha(),
+pygame.image.load('cards_png/blue_2.png').convert_alpha(), pygame.image.load('cards_png/blue_3.png').convert_alpha(), pygame.image.load('cards_png/blue_4.png').convert_alpha(),
+pygame.image.load('cards_png/blue_5.png').convert_alpha(), pygame.image.load('cards_png/blue_6.png').convert_alpha(), pygame.image.load('cards_png/blue_7.png').convert_alpha(),
+pygame.image.load('cards_png/blue_8.png').convert_alpha(), pygame.image.load('cards_png/blue_9.png').convert_alpha(), pygame.image.load('cards_png/blue_reverse.png').convert_alpha(),
+pygame.image.load('cards_png/blue_skip.png').convert_alpha(), pygame.image.load('cards_png/blue_Draw 2.png').convert_alpha(), pygame.image.load('cards_png/blue_show me.png').convert_alpha(),
+pygame.image.load('cards_png/green_0.png').convert_alpha(), pygame.image.load('cards_png/green_1.png').convert_alpha(), pygame.image.load('cards_png/green_2.png').convert_alpha(),
+pygame.image.load('cards_png/green_3.png').convert_alpha(), pygame.image.load('cards_png/green_4.png').convert_alpha(), pygame.image.load('cards_png/green_5.png').convert_alpha(),
+pygame.image.load('cards_png/green_6.png').convert_alpha(),pygame.image.load('cards_png/green_7.png').convert_alpha(), pygame.image.load('cards_png/green_8.png').convert_alpha(),
+pygame.image.load('cards_png/green_9.png').convert_alpha(), pygame.image.load('cards_png/green_reverse.png').convert_alpha(), pygame.image.load('cards_png/green_skip.png').convert_alpha(),
+pygame.image.load('cards_png/green_Draw 2.png').convert_alpha(), pygame.image.load('cards_png/green_show me.png').convert_alpha()]
+
+specialCards = [pygame.image.load('cards_png/_Draw 4.png').convert_alpha(), pygame.image.load('cards_png/_wild.png').convert_alpha(), pygame.image.load('cards_png/_no.png').convert_alpha(),
+pygame.image.load('cards_png/_swap.png').convert_alpha(), pygame.image.load('cards_png/red_wild.png'),pygame.image.load('cards_png/yellow_wild.png'), pygame.image.load('cards_png/blue_wild.png'),
+ pygame.image.load('cards_png/green_wild.png'), pygame.image.load('cards_png/red_Draw 4.png').convert_alpha(),pygame.image.load('cards_png/yellow_Draw 4.png').convert_alpha(),
+ pygame.image.load('cards_png/blue_Draw 4.png').convert_alpha(),pygame.image.load('cards_png/green_Draw 4.png').convert_alpha(),pygame.image.load('cards_png/red_no.png').convert_alpha(),
+ pygame.image.load('cards_png/yellow_no.png').convert_alpha(),pygame.image.load('cards_png/blue_no.png').convert_alpha(), pygame.image.load('cards_png/green_no.png').convert_alpha()]
+
+cardsD = {'red_0': pygame.transform.scale(cardsPics[0],size), 'red_1': pygame.transform.scale(cardsPics[1],size), 
+'red_2' : pygame.transform.scale(cardsPics[2], size),         'red_3' : pygame.transform.scale(cardsPics[3], size),
+'red_4' : pygame.transform.scale(cardsPics[4], size),         'red_5' : pygame.transform.scale(cardsPics[5], size),
+'red_6': pygame.transform.scale(cardsPics[6],size),           'red_7' : pygame.transform.scale(cardsPics[7], size),
+'red_8' : pygame.transform.scale(cardsPics[8], size),         'red_9':  pygame.transform.scale(cardsPics[9],size), 
+'red_reverse' : pygame.transform.scale(cardsPics[10],size),   'red_skip' : pygame.transform.scale(cardsPics[11], size),
+'red_Draw 2' : pygame.transform.scale(cardsPics[12], size),   'red_show me' : pygame.transform.scale(cardsPics[13], size), 
+'yellow_0' : pygame.transform.scale(cardsPics[14], size),     'yellow_1' : pygame.transform.scale(cardsPics[15], size), 
+'yellow_2' : pygame.transform.scale(cardsPics[16], size),     'yellow_3' : pygame.transform.scale(cardsPics[17], size), 
+'yellow_4' : pygame.transform.scale(cardsPics[18], size),     'yellow_5' : pygame.transform.scale(cardsPics[19], size),
+'yellow_6' : pygame.transform.scale(cardsPics[20], size),     'yellow_7' : pygame.transform.scale(cardsPics[21], size), 
+'yellow_8' : pygame.transform.scale(cardsPics[22], size),      'yellow_9' : pygame.transform.scale(cardsPics[23], size),
+'yellow_reverse' : pygame.transform.scale(cardsPics[24], size),'yellow_skip' : pygame.transform.scale(cardsPics[25], size), 
+'yellow_Draw 2' : pygame.transform.scale(cardsPics[26], size), 'yellow_show me' : pygame.transform.scale(cardsPics[27], size), 
+'blue_0' : pygame.transform.scale(cardsPics[28], size),         'blue_1' : pygame.transform.scale(cardsPics[29], size), 
+'blue_2' : pygame.transform.scale(cardsPics[30], size),         'blue_3' : pygame.transform.scale(cardsPics[31], size), 
+'blue_4' : pygame.transform.scale(cardsPics[32], size),         'blue_5' : pygame.transform.scale(cardsPics[33], size),
+'blue_6' : pygame.transform.scale(cardsPics[34], size),         'blue_7' : pygame.transform.scale(cardsPics[35], size), 
+'blue_8' : pygame.transform.scale(cardsPics[36], size),         'blue_9' : pygame.transform.scale(cardsPics[37], size),
+'blue_reverse' : pygame.transform.scale(cardsPics[38], size),   'blue_skip' : pygame.transform.scale(cardsPics[39], size), 
+'blue_Draw 2' : pygame.transform.scale(cardsPics[40], size),    'blue_show me' : pygame.transform.scale(cardsPics[41], size), 
+'green_0' : pygame.transform.scale(cardsPics[42], size),        'green_1' : pygame.transform.scale(cardsPics[43], size), 
+'green_2' : pygame.transform.scale(cardsPics[44], size),        'green_3' : pygame.transform.scale(cardsPics[45], size), 
+'green_4' : pygame.transform.scale(cardsPics[46], size),        'green_5' : pygame.transform.scale(cardsPics[47], size),
+'green_6' : pygame.transform.scale(cardsPics[48], size),        'green_7' : pygame.transform.scale(cardsPics[49], size), 
+'green_8' : pygame.transform.scale(cardsPics[50], size),        'green_9' : pygame.transform.scale(cardsPics[51], size),
+'green_reverse' : pygame.transform.scale(cardsPics[52], size), 'green_skip' : pygame.transform.scale(cardsPics[53], size),
+ 'green_Draw 2' : pygame.transform.scale(cardsPics[54], size), 'green_show me' : pygame.transform.scale(cardsPics[55], size), 
+'_Draw 4' : pygame.transform.scale(specialCards[0], size),      '_Wild' : pygame.transform.scale(specialCards[1], size), 
+'_no' : pygame.transform.scale(specialCards[2], size),          '_swap' : pygame.transform.scale(specialCards[3], size), 
+'red_Wild':pygame.transform.scale(specialCards[4], size),       "yellow_Wild": pygame.transform.scale(specialCards[5], size), 
+"blue_Wild" : pygame.transform.scale(specialCards[6], size),    "green_Wild" : pygame.transform.scale(specialCards[7], size),
+'red_Draw 4' : pygame.transform.scale(specialCards[8], size),'yellow_Draw 4' : pygame.transform.scale(specialCards[9], size),
+'blue_Draw 4' : pygame.transform.scale(specialCards[10], size),'green_Draw 4' : pygame.transform.scale(specialCards[11], size),
+'red_no' : pygame.transform.scale(specialCards[12], size),'yellow_no' : pygame.transform.scale(specialCards[13], size),
+'blue_no' : pygame.transform.scale(specialCards[14], size),'green_no' : pygame.transform.scale(specialCards[15], size)}
+
+playersD = {"p1": pygame.image.load('images/p1.jpg').convert_alpha(), "p2" : pygame.image.load('images/p2.jpg').convert_alpha(), "p3": pygame.image.load('images/p3.jpg').convert_alpha(),
+"p4" : pygame.image.load('images/p4.jpg').convert_alpha()}
+
+colorsD = {"red": pygame.image.load('images/red.jpg').convert_alpha(), "blue" : pygame.image.load('images/blue.jpg').convert_alpha(), "yellow": pygame.image.load('images/yellow.jpg').convert_alpha(),
+"green" : pygame.image.load('images/green.jpg').convert_alpha()}
+class card:
+    def __init__ (self, c, v, s):
+        self.getColor = c 
+        self.getValue = v
+        self.special = s
+        # colors and vlaues for basic cards
+    def printCard(self):
+        if not self.special:
+            return(self.getColor +"_"+ self.getValue)
+        else:
+            return((self.getValue))
+
+# function to generate cards 
+def deck():
+    colors = ["red", "blue", "green", "yellow"]
+    values = ['1', '2', '3', '4', '5', '6', '7' ,'8', '9','Draw 2', 'reverse', 'skip', 'show me','Wild', '0']
+    #how much each card is repeated 
+    count = [2] * 14 + [1]
+
+
+    # list on special cards 
+    specialCards = ['_Wild', 'Draw 4', '_swap', '_no']
+    
+    # list of all cards 
+    unoDeck =[]  
+    for i in range(len(colors)):
+        j = 0
+        l = 0
+
+        for j in range (len(values)):
+            for k in range (count[l]):
+                unoDeck.append(card(colors[i], values[j], False).printCard())            
+            l+=1
+
+    for sCard in specialCards:
+        for j in range (4):
+            unoDeck.append(card("", sCard, True).printCard())
+            # unoDeck.append(card("", specialCards[0], True).printCard())
+
+    return unoDeck
+
+
+class player:
+    def __init__ (self, n, c,):
+        self.name = n
+        self.cards = c
+    
+class UNO:
+    def __init__(self, n, d):
+        self.numOfPlayers = n
+        self.deck = d
+        random.shuffle(self.deck)
+        self.playerList = []
+        self.playerCardsList = []
+        self.middleCard = self.generateMiddle()
+        self.currentPlayer = 0
+        self.won = False
+        self.howmanytimes = 0
+        self.drawCount = 0
+        self.direction = 1
+        self.nou = False
+        self.lastCard = []
+        self.action = False
+        self.ran = False
+        self.draw
+        self.player1But = None
+        self.player2But = None
+        self.player3But = None
+        self.player4But = None
+        self.drawColors= False
+        self.color = ""
+        self.coloredSp = ""
+        self.returnidk = False
+        for i in range (self.numOfPlayers) :
+            self.lastCard.append(False)
+        self.drawAll = None
+        self.noNoCard = True
+        self.normalCard = False
+        self.showMeflag = False
+        self.draw2Flag = False
+        self.wildFlag = False
+        self.draw4Flag = False
+        self.swapFlag = False
+        self.noFlag  = False
+        self.skipFlag = False
+        self.reverseFlag = False
+        self.pressed = False
+        self.centerF =True
+        self.redclicked = False
+        self.coloredWild = False
+    
+        self.allPlayers = ["p1", "p2", "p3", "p4"][:self.numOfPlayers]
+        #draw button
+        self.drawButton = Button (10, 200, pygame.image.load('images/draw.png').convert_alpha(), 0, 0.3)
+        # players as button in case of swap card
+
+
+        #colors buttons
+        self.redBut = Button(1100, 250, colorsD["red"], 0, 0.5 )
+        self.blueBut = Button(1100, 150, colorsD["blue"], 0, 0.5 )
+        self.greenBut = Button(1000, 250, colorsD["green"],0,  0.5 )
+        self.yellowBut = Button(1000, 150, colorsD["yellow"],0, 0.5 )
+
+
+    def distribute (self):
+        for i in range (self.numOfPlayers):
+            
+            if len(self.deck) >= 8:
+                cards = self.deck[0: 8]
+                #cards.append((card("", "_wild", True)))
+                self.deck = self.deck[8:]
+                self.playerList.append(player(int(i+1), cards))
+
+    #helper to generate starting middle card 
+    def generateMiddle(self):
+        notNumbers = ['Draw 2', 'reverse', 'skip', 'show me', 'Wild', 'Draw 4', 'swap', 'no']
+        i = 0
+        # loops to find a middle card that has a number
+        while (self.deck[i].split('_')[1] in notNumbers):
+            i += 1
+
+        middleCard = self.deck[i]
+        del self.deck [i]
+        return middleCard
+
+    def drawCard(self):
+        self.playerList[self.currentPlayer].cards += [self.deck[0]]
+        self.deck = self.deck[1:]
+    
+    def playersButtons (self):
+        index = 0
+        x = 0
+        currentp = 0
+        playerNow = "p" + str(self.currentPlayer + 1)
+        otherPlayers = self.allPlayers.copy()
+        if playerNow in otherPlayers:
+            otherPlayers.remove(playerNow)
+        center = (1300 - ((self.numOfPlayers-3) * 230) + 108) // 3 + self.numOfPlayers - 1
+        
+        for person in otherPlayers:
+            
+            btn = Button (center + x , 30, playersD[person], 0, 0.4, player = currentp)
+            btn.draw()
+            font = pygame.font.Font('freesansbold.ttf', 32)
+            cardsNum = font.render((" " + str (len(self.playerList[currentp].cards)) + " "), True, pink, white)
+            screen.blit(cardsNum, (center+x, 30 ))
+            if currentp == 0:
+                self.player1But = btn
+            elif currentp == 1:
+                self.player2But = btn
+            elif currentp == 2:
+                self.player3But = btn
+            elif currentp == 3:
+                self.player4But = btn
+            x += 230
+            index +=1
+            currentp +=1
+        return 1
+        
+    def displayCards(self):
+        newcenter = (1300 - ((len(self.playerList[0].cards)-16) * 80))//2
+        center = 0
+        i = 0
+        ind = 0
+        if self.centerF ==True:
+            center = (1300 - ((len(self.playerList[0].cards)) * 80))//2
+        if center < 0:
+            center = 30
+            self.centerF = False
+        
+        for card in self.playerList[0].cards[:16]:
+            screen.blit(cardsD[card], (center+i, 400))
+
+        if ind == 16:
+            j=0
+            for card in self.playerList[0].cards[16:]:
+                screen.blit(cardsD[card], (newcenter+j, 530))
+                j+=80
+
+
+    def makeMove(self):
+        self.action = False
+        flag = False
+        validCard = False
+        i = 0
+        ind = 0
+        screen.blit(cardsD[self.middleCard], (600, 200))
+        self.playersButtons()
+        
+        if self.drawColors == True:
+            return 1
+        
+            
+        # button to draw a card
+        if self.drawButton.draw():
+            screen.blit(bg, (0,0))
+            self.drawCard()
+            self.drawButton.clicked = False
+            self.action = True
+            self.playersButtons()
+            return 1
+
+        
+        while (validCard == False):
+            #makes players avatars as buttons center = (1300 - (len(self.playerList[self.currentPlayer].cards) * 80))//2
+            newcenter = (1300 - ((len(self.playerList[self.currentPlayer].cards)-16) * 80))//2
+            center = 0
+            if self.centerF ==True:
+                center = (1300 - ((len(self.playerList[self.currentPlayer].cards)) * 80))//2
+            if center < 0:
+                center = 30
+                self.centerF = False
+            
+            for card in self.playerList[self.currentPlayer].cards[:16]:
+                print(card)
+                btn = Button(center+i, 400, cardsD[card], ind)
+                ind+=1
+                i+=80
+                if btn.draw() == True:
+                    index = btn.getIndex()
+                    flag = True
+            
+            if ind == 16:
+                j=0
+                for card in self.playerList[self.currentPlayer].cards[16:]:
+                    newbtn = Button(newcenter+j, 530, cardsD[card], ind)
+                    ind+=1
+                    j+=80
+                    if newbtn.draw() == True:
+                        index = newbtn.getIndex()
+                        flag = True
+                    
+
+                #if the move is valid change the middle card and append it to the main deck
+            if (flag == True) and self.isValidMove(self.playerList[self.currentPlayer].cards[index], index):
+                print ("valid")
+                    
+                if self.draw2Flag == True:
+                    self.draw2Flag = False
+                    self.drawCount +=2
+                    self.playCard(index)
+                    print(415)
+                if self.drawAll == False:
+                    self.drawCount = 0 
+                    self.drawAll = None
+                    validCard = True
+                elif self.drawAll == True:
+                    self.draw()
+                    self.drawAll = None
+                    validCard = True
+                elif self.noNoCard == False:
+                    self.draw()
+                    
+                    self.noNOcard = True
+                    return 1
+                elif self.normalCard == True:
+                    self.normalCard = False
+                    self.playCard(index)
+                    print(430)
+                    validCard = True
+                if self.showMeflag == True:
+                    print("show me")
+                    self.showMeFlag = False
+                    playerNums = []
+                    #deelets th current player from the players nums list so they don't choose themselves
+                    for i in range (self.numOfPlayers):
+                        playerNums.append(i)
+                    del playerNums[self.currentPlayer]
+                    num = self.numOfPlayers - 2
+                    randp = random.randint(0, num)
+                    font = pygame.font.Font('freesansbold.ttf', 20)
+                    text = font.render((f'player {randp+1} cards: \n {self.playerList[randp].cards}'), True, pink, white)                
+                    
+                    
+                    screen.blit(text, (100, 400 ))
+                    pygame.display.update()
+                    pygame.time.wait(5000)
+                    self.playCard(index)
+                    print(444)
+                    validCard = True
+                    return 1
+
+                elif self.draw2Flag == True:
+                    self.draw2Flag = False
+                    self.drawCount += 2
+                if self.wildFlag == True:
+                    self.wildFlag = False
+                    # picks a random color for wild card 
+                    self.cardNow = '_Wild'
+                    print("a")
+                    colors = ["red", "blue", "green", "yellow"]
+                    randomclr = colors[random.randint(0,3)]
+                    newCard = str(randomclr) + str(self.cardNow)
+                    self.playWild(index, newCard, '_Wild')                 
+                    validCard = True
+                elif self.draw4Flag == True:
+                    self.draw4Flag = False
+                    self.playCard(index)                
+                    validCard = True
+                    return 1
+                    
+                elif self.noFlag  == True:
+                    self.noFlag  = False
+                    self.drawCount = 0 
+                    colors = ["red", "blue", "green", "yellow"]
+                    randomclr = colors[random.randint(0,3)]
+                    self.cardNow = '_no'
+                    newCard = str(randomclr) + str(self.cardNow)
+                    self.playWild(index, newCard, '_no')                 
+                    validCard = True
+                    return 1
+                elif self.swapFlag == True:
+                    self.swapFlag = False
+                    n = random.randint(1,self.numOfPlayers-1)
+                    self.swap(n)
+                    self.playCard(index)
+                    return 1
+                elif self.skipFlag == True:
+                    self.skipFlag = False
+                    self.playCard(index)
+                    print(485)
+                    self.skip()
+                    return 1
+                elif self.reverseFlag == True:
+                    print("in rev")
+                    if self.numOfPlayers > 2:
+                        self.direction *=-1
+                        self.playCard(index)
+                        return -1
+                    else:
+                        self.playCard(index)
+                        self.skip()
+                        return 1
+
+                elif self.coloredWild == True:
+                    self.coloredWild = False
+                    self.playCard(index)
+                    print(499)
+                    validCard = True
+
+            elif (flag == True) and not self.isValidMove(self.playerList[self.currentPlayer].cards[index], index):
+                print ("please make a vlaid move!")
+                print(self.playerList[self.currentPlayer].cards[index])
+            return 1  
+
+    
+    # changes the middle card to the card chosen and appends it to the deck
+    # while deleting from current set of card of current user
+    def playWild(self, index, newcard, cardType):
+        self.middleCard = newcard
+        print(self.currentPlayer)
+        print("cards", self.playerList[self.currentPlayer].cards)
+        print(index)
+
+        del self.playerList[self.currentPlayer].cards[index]
+        self.deck.append(cardType)
+        screen.blit(bg, (0,0))
+        self.action = True               
+        self.playersButtons()
+
+    def playCard (self, index):
+        # if index > len(self.playerList[self.currentPlayer].cards):
+        print("a",self.playerList[self.currentPlayer].cards)
+        self.normalCard = False
+        self.middleCard = self.playerList[self.currentPlayer].cards[index]
+        del self.playerList[self.currentPlayer].cards[index]
+        self.deck.append(self.middleCard)
+        screen.blit(bg, (0,0))
+        self.action = True               
+        self.playersButtons()
+    
+    #if players chooses a card ro change color (i.e Wild, Draw 4, etc.)
+    #choose color you want to change 
+    # def wild (self, i):
+   
+        
+
+    # checks if plaeer made a valid move
+    def isValidMove(self, card, i):
+        middleC = self.middleCard.split('_')[0]
+        middleN = self.middleCard.split('_')[1]
+        cardC = card.split('_')[0]
+        cardN = card.split('_')[1]
+        colors = ["red", "blue", "green", "yellow"]
+
+        
+        
+        if  'Draw' in middleN and ('no' in cardN) and self.drawCount !=  0:
+            print("a")
+            self.drawAll = False
+            return True
+        elif 'Draw' not in middleN and ('no' not in cardN) and self.drawCount !=  0:
+            print("b")
+            self.drawAll = True
+            return True
+        
+
+        if cardC in colors and cardN == 'Wild':
+            self.coloredWild = True
+            return True
+
+        if cardN == 'Wild' and middleN == 'N':
+            self.coloredWild = True
+            return True
+        elif cardN == 'reverse' and (cardC == middleC):
+            print("rev")
+            self.reverseFlag = True
+            return True
+        
+
+
+        #player drawall card in darw count if they havent played a "no" card
+        if (self.drawCount !=  0) and ('Draw' not in cardN) and ('no' not in cardN):
+            self.noNoCard = False
+            print("c")
+            return True
+        
+
+        #if tehe card has the sasm evallue or color as the middle card 
+        if (cardN == middleN or cardC == middleC):
+            print("d")
+            # cards with numebrs only 
+            if cardN.isdigit():
+                self.normalCard = True
+                print("e")
+                return True
+
+            elif cardN == 'show me':
+                print("f")
+                self.showMeflag = True
+                return True
+  
+            if cardN == 'Draw 2':
+                print("g")
+                self.draw2Flag = True
+                return True
+            if cardN == 'skip':
+                print("m")
+                self.skipFlag = True
+                return True
+
+            elif cardC == "" and cardN == 'Wild':
+                self.wildFlag = True
+                return True
+                
+        elif cardC == "" and cardN == 'Wild':
+            print("h")
+            self.wildFlag = True
+            return True
+
+        elif cardN == 'Draw 4' :
+            print("i")
+            self.draw4Flag = True
+            return True 
+
+        elif cardN == 'no':
+            print("j")
+            self.noFlag  = True
+            return True
+        
+        elif cardN == 'no u':
+            print("k")
+            return True
+        
+        elif cardN == 'swap':
+            print("l")
+            self.swapFlag = True
+            return True 
+        
+     
+    def skip (self):
+        if (uno.currentPlayer + self.direction ==  uno.numOfPlayers) or (uno.currentPlayer + self.direction < 0):
+            uno.currentPlayer = 0
+        else:
+            uno.currentPlayer += self.direction
+
+
+    def draw(self):
+        print (f"Draw {self.drawCount} cards lol")
+        self.playerList[self.currentPlayer].cards += self.deck[:self.drawCount]
+        self.deck = self.deck[self.drawCount:]
+        self.drawCount = 0 
+
+
+    def swap(self, n):
+        temp = self.playerList[self.currentPlayer].cards[1:]
+        self.playerList[self.currentPlayer].cards =  self.playerList[n-1].cards
+        self.playerList[n-1].cards =  temp
+
+    
+    def unoAi(self, player):
+        print("in")
+        middleC = self.middleCard.split('_')[0]
+        middleN = self.middleCard.split('_')[1]
+        print(self.currentPlayer)
+        cards =self.playerList[player].cards
+        print(cards)
+        for card in cards:
+            if card.split('_')[0] == middleC:
+                index = cards.index(card)
+                self.playCard(index)
+                print(660)
+                print("if 1")
+                return 1
+            elif card.split('_')[1] == middleN:
+                index = cards.index(card)
+                self.playCard(index)
+                print(665)
+                print("if 2")
+                return 1
+            elif card.split('_')[1] == 'Wild' and (middleC != 'Draw 4'):
+                colors = ["red", "blue", "green", "yellow"]
+                randomclr = colors[random.randint(0,3)]
+                newCard = str(randomclr) + '_Wild'
+                index = cards.index(card)
+                self.playWild(index, newCard, '_Wild') 
+                print("if 3")
+                return 1
+            else:
+                print("if 4")
+                self.drawCard()
+                return 1
+
+    def someOneWon(self):
+        if self.currentPlayer == self.numOfPlayers:
+            self.currentPlayer = 0
+        if len(self.playerList[self.currentPlayer].cards) == 0:
+            font = pygame.font.Font('freesansbold.ttf', 50)
+            text = font.render((f"player {self.currentPlayer+1} Won!"), True, pink, white)
+            screen.blit(text, (650, 400 ))
+            self.won = True
+            return True
+
+uno = UNO(playersn, deck())
+uno.distribute()
+
+#mainloop
+
+run = True
+while run:
+    uno.someOneWon()
+
+    # if uno.someOneWon() == True:
+        # run = False
+
+    screen.blit(cardsD[uno.middleCard], (600, 200))
+    uno.displayCards()
+    if uno.currentPlayer  ==  uno.numOfPlayers:
+        uno.currentPlayer = 0
+    if uno.currentPlayer < 0:
+        uno.currentPlayer *=-1
+
+    if uno.currentPlayer == 1:
+        uno.unoAi(1)
+        if uno.action and not uno.won:
+            direction = 1 * direction
+            uno.currentPlayer +=direction
+    elif uno.currentPlayer == 2:
+        uno.unoAi(2)
+        if uno.action and not uno.won:
+            direction = 1 * direction
+            uno.currentPlayer +=direction
+    elif uno.currentPlayer == 3:
+        uno.unoAi(3)
+        if uno.action and not uno.won:
+            direction = 1 * direction
+            uno.currentPlayer +=direction
+        
+    if uno.currentPlayer == 0:
+        d = uno.makeMove()
+        if uno.action and not uno.won:
+            direction = d * direction
+            uno.currentPlayer +=direction
+        
+        clock.tick(10)
+    
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+    gameScreen()
+pygame.quit()
+
+
